@@ -14,27 +14,29 @@
 <button onclick="send()">Зарегистрироваться</button>
 
 <script>
+const tg = window.Telegram.WebApp;
+tg.expand();
+
 function send() {
-    const name = document.getElementById("nickname").value;
+    const nickname = document.getElementById("nickname").value;
     const file = document.getElementById("avatar").files[0];
 
-    if (!name) {
-        alert("Введите ник!");
-        return;
-    }
+    if (!nickname) return alert("Введите ник!");
 
     if (file) {
         const reader = new FileReader();
         reader.onload = function () {
-            Telegram.WebApp.sendData(JSON.stringify({
-                nickname: name,
+            tg.sendData(JSON.stringify({
+                action: "register",
+                nickname: nickname,
                 avatar: reader.result
             }));
         };
         reader.readAsDataURL(file);
     } else {
-        Telegram.WebApp.sendData(JSON.stringify({
-            nickname: name,
+        tg.sendData(JSON.stringify({
+            action: "register",
+            nickname: nickname,
             avatar: null
         }));
     }
