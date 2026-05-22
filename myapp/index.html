@@ -1,38 +1,57 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8" />
-    <title>Mini App</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <meta charset="UTF-8">
+    <title>Регистрация</title>
     <style>
-        body {
-            background: var(--tg-theme-bg-color);
-            font-family: sans-serif;
-            color: var(--tg-theme-text-color);
-            padding: 20px;
-        }
-        button {
-            padding: 10px 20px;
-            background: #4CAF50;
-            border: none;
-            border-radius: 8px;
-            color: white;
-            font-size: 16px;
-        }
+        body { font-family: sans-serif; padding: 20px; }
+        input, button { display: block; margin: 15px 0; width: 100%; padding: 10px; }
     </style>
 </head>
 <body>
 
-<h2>Добро пожаловать в мини-приложение! 🎉</h2>
+<h2>Регистрация</h2>
 
-<button onclick="sendData()">Отправить данные боту</button>
+<label>Никнейм</label>
+<input id="nickname" placeholder="Введите ник">
+
+<label>Аватарка</label>
+<input type="file" id="avatar" accept="image/*">
+
+<button id="registerBtn">Зарегистрироваться</button>
 
 <script>
-    function sendData() {
-        Telegram.WebApp.sendData("Привет! Это данные из Mini App.");
+document.getElementById("registerBtn").onclick = async () => {
+    const nickname = document.getElementById("nickname").value.trim();
+    const fileInput = document.getElementById("avatar").files[0];
+
+    if (!nickname) {
+        alert("Введите никнейм!");
+        return;
     }
 
-    Telegram.WebApp.expand();
+    let avatarBase64 = null;
+
+    if (fileInput) {
+        const reader = new FileReader();
+        reader.onload = () => {
+            avatarBase64 = reader.result;
+
+            Telegram.WebApp.sendData(JSON.stringify({
+                action: "register",
+                nickname: nickname,
+                avatar: avatarBase64
+            }));
+        };
+        reader.readAsDataURL(fileInput);
+    } else {
+        Telegram.WebApp.sendData(JSON.stringify({
+            action: "register",
+            nickname: nickname,
+            avatar: null
+        }));
+    }
+};
 </script>
 
 </body>
