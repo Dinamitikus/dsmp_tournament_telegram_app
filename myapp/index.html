@@ -14,40 +14,27 @@
             color: white;
             margin: 0;
         }
-        input {
+        input, button {
             padding: 12px;
-            width: 80%;
-            font-size: 17px;
-            margin: 15px 0;
-            border-radius: 8px;
-            border: none;
-        }
-        button {
-            padding: 14px 32px;
-            font-size: 17px;
             margin: 10px;
+            font-size: 17px;
             border-radius: 8px;
-            background: #00aaff;
-            color: white;
-            border: none;
         }
-        .profile {
-            margin-top: 30px;
+        input { width: 80%; border: none; }
+        button { 
+            background: #00aaff; 
+            color: white; 
+            border: none; 
+            padding: 14px 32px;
         }
-        img {
+        .profile img {
             width: 140px;
             height: 140px;
             border-radius: 50%;
-            object-fit: cover;
             border: 4px solid #00aaff;
+            object-fit: cover;
         }
-        .version {
-            position: fixed;
-            bottom: 10px;
-            right: 10px;
-            font-size: 12px;
-            color: #555;
-        }
+        .version { position: fixed; bottom: 10px; right: 10px; font-size: 12px; color: #666; }
     </style>
 </head>
 <body>
@@ -56,7 +43,7 @@
     <h2>Загрузка...</h2>
 </div>
 
-<div class="version">v1.5</div>
+<div class="version">v1.6</div>
 
 <script>
 const tg = window.Telegram.WebApp;
@@ -65,31 +52,30 @@ tg.expand();
 const user = tg.initDataUnsafe?.user || {};
 const userId = user.id ? user.id.toString() : "test_" + Date.now();
 
-let isRegistered = false;
+console.log("Mini App opened. User ID:", userId);
 
-// При открытии запрашиваем статус
+// При открытии сразу проверяем профиль
 window.onload = () => {
-    tg.sendData(JSON.stringify({
-        action: "get_profile",
-        user_id: userId
-    }));
+    tg.sendData(JSON.stringify({ action: "get_profile", user_id: userId }));
     
-    // Через 800мс показываем регистрацию (если бот не ответил)
+    // Если бот не ответил быстро — показываем регистрацию
     setTimeout(() => {
-        if (!isRegistered) showRegister();
-    }, 800);
+        if (document.getElementById("content").innerHTML.includes("Загрузка")) {
+            showRegister();
+        }
+    }, 1000);
 };
 
 function showRegister() {
     document.getElementById("content").innerHTML = `
-        <h2>Регистрация в турнире</h2>
-        <p>Аватарка будет взята из Telegram</p>
-        <input id="nickname" placeholder="Ваш никнейм" maxlength="20"><br><br>
+        <h2>Регистрация</h2>
+        <p>Аватарка из Telegram</p>
+        <input id="nickname" placeholder="Никнейм" maxlength="20"><br><br>
         <button onclick="registerUser()">Зарегистрироваться</button>
     `;
 }
 
-async function registerUser() {
+function registerUser() {
     const nickname = document.getElementById("nickname").value.trim();
     if (!nickname) return alert("Введите никнейм!");
 
@@ -104,16 +90,18 @@ async function registerUser() {
 }
 
 function showProfile(nickname, avatarUrl) {
-    isRegistered = true;
     document.getElementById("content").innerHTML = `
         <div class="profile">
             <h2>Профиль</h2>
-            <img src="${avatarUrl || 'https://via.placeholder.com/140?text=No+Avatar'}" alt="Аватар"><br><br>
+            <img src="${avatarUrl || 'https://via.placeholder.com/140'}" alt="avatar"><br><br>
             <h3>${nickname}</h3>
             <p>ID: ${userId}</p>
         </div>
     `;
 }
+
+// По умолчанию
+showRegister();
 </script>
 
 </body>
