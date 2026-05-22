@@ -56,7 +56,7 @@
     <h2>Загрузка...</h2>
 </div>
 
-<div class="version">v1.2</div>
+<div class="version">v1.3</div>
 
 <script>
 const tg = window.Telegram.WebApp;
@@ -65,7 +65,7 @@ tg.expand();
 const user = tg.initDataUnsafe?.user || {};
 const userId = user.id ? user.id.toString() : "test_" + Date.now();
 
-// При открытии сразу спрашиваем у бота статус
+// При открытии сразу проверяем, зарегистрирован ли пользователь
 window.onload = () => {
     tg.sendData(JSON.stringify({
         action: "get_profile",
@@ -95,12 +95,11 @@ function showProfile(nickname, avatarUrl) {
             <img src="${avatarUrl || 'https://via.placeholder.com/140?text=No+Avatar'}" alt="Аватар"><br><br>
             <h3>${nickname}</h3>
             <p>ID: ${userId}</p>
-            <button onclick="tg.close()">Закрыть</button>
+            <!-- Кнопка закрытия убрана -->
         </div>
     `;
 }
 
-// Показываем форму регистрации
 function showRegister() {
     document.getElementById("content").innerHTML = `
         <h2>Регистрация в турнире</h2>
@@ -110,7 +109,7 @@ function showRegister() {
     `;
 }
 
-// По умолчанию показываем форму
+// По умолчанию показываем форму регистрации
 showRegister();
 </script>
 
