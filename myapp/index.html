@@ -12,54 +12,14 @@
             padding: 20px;
             background: #17212b;
             color: white;
-            margin: 0;
         }
-        input {
-            padding: 12px;
-            width: 80%;
-            font-size: 17px;
-            margin: 20px 0;
-            border-radius: 8px;
-            border: none;
-        }
-        button {
-            padding: 14px 32px;
-            font-size: 17px;
-            margin: 10px;
-            border-radius: 8px;
-            background: #00aaff;
-            color: white;
-            border: none;
-        }
-        .profile {
-            margin-top: 30px;
-        }
-        img {
-            width: 130px;
-            height: 130px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 3px solid #00aaff;
-        }
+        .error { color: #ff6666; margin: 20px; }
     </style>
 </head>
 <body>
 
-<!-- Экран регистрации -->
-<div id="registerScreen">
-    <h2>Регистрация в турнире</h2>
-    <p>Аватарка будет взята из Telegram</p>
-    <input id="nickname" placeholder="Ваш никнейм" maxlength="20"><br><br>
-    <button onclick="registerUser()">Зарегистрироваться</button>
-</div>
-
-<!-- Экран профиля -->
-<div id="profileScreen" style="display: none;" class="profile">
-    <h2>Профиль</h2>
-    <img id="avatar" src="" alt="Аватар"><br><br>
-    <h3 id="nicknameText"></h3>
-    <p>ID: <span id="userIdText"></span></p>
-    <button onclick="tg.close()">Закрыть</button>
+<div id="content">
+    <h2>Загрузка...</h2>
 </div>
 
 <script>
@@ -69,21 +29,29 @@ tg.expand();
 const user = tg.initDataUnsafe?.user;
 const userId = user?.id?.toString();
 
-if (!userId) {
-    document.body.innerHTML = "<h3>Ошибка: Откройте приложение через Telegram</h3>";
+function showError() {
+    document.getElementById("content").innerHTML = `
+        <h2 class="error">⚠️ Откройте приложение через Telegram</h2>
+        <p>Пожалуйста, зайдите в бота и нажмите кнопку "Открыть приложение".</p>
+    `;
 }
 
-// Регистрация
+if (!userId) {
+    showError();
+} else {
+    // Нормальная загрузка
+    document.getElementById("content").innerHTML = `
+        <h2>Регистрация в турнире</h2>
+        <p>Аватарка будет взята из вашего Telegram</p>
+        <input id="nickname" placeholder="Ваш никнейм" maxlength="20" style="padding:12px; width:80%; font-size:17px; margin:15px 0; border-radius:8px;"><br><br>
+        <button onclick="registerUser()" style="padding:14px 32px; font-size:17px; background:#00aaff; color:white; border:none; border-radius:8px;">Зарегистрироваться</button>
+    `;
+}
+
 async function registerUser() {
-    const nicknameInput = document.getElementById("nickname");
-    const nickname = nicknameInput.value.trim();
+    const nickname = document.getElementById("nickname").value.trim();
+    if (!nickname) return alert("Введите никнейм!");
 
-    if (!nickname) {
-        alert("Пожалуйста, введите никнейм!");
-        return;
-    }
-
-    // Отправляем данные
     tg.sendData(JSON.stringify({
         action: "register",
         user_id: userId,
@@ -91,25 +59,18 @@ async function registerUser() {
         avatar: user.photo_url || null
     }));
 
-    // Сразу показываем профиль
-    showProfile(nickname, user.photo_url);
+    // Показываем профиль сразу
+    document.getElementById("content").innerHTML = `
+        <div class="profile" style="margin-top:30px;">
+            <h2>Профиль создан!</h2>
+            <img src="${user.photo_url || 'https://via.placeholder.com/130'}" 
+                 style="width:130px;height:130px;border-radius:50%;border:3px solid #00aaff;object-fit:cover;"><br><br>
+            <h3>${nickname}</h3>
+            <p>ID: ${userId}</p>
+            <button onclick="tg.close()" style="padding:12px 30px;">Закрыть</button>
+        </div>
+    `;
 }
-
-// Показ профиля
-function showProfile(nickname, avatarUrl) {
-    document.getElementById("registerScreen").style.display = "none";
-    document.getElementById("profileScreen").style.display = "block";
-
-    document.getElementById("nicknameText").textContent = nickname;
-    document.getElementById("userIdText").textContent = userId;
-    
-    document.getElementById("avatar").src = avatarUrl || "https://via.placeholder.com/130?text=No+Photo";
-}
-
-// При загрузке показываем только форму регистрации (убрали автоматический sendData)
-window.onload = () => {
-    // Ничего не отправляем автоматически
-};
 </script>
 
 </body>
