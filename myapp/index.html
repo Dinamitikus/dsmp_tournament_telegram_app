@@ -56,7 +56,7 @@
     <h2>Загрузка...</h2>
 </div>
 
-<div class="version">v1.4</div>
+<div class="version">v1.5</div>
 
 <script>
 const tg = window.Telegram.WebApp;
@@ -65,12 +65,29 @@ tg.expand();
 const user = tg.initDataUnsafe?.user || {};
 const userId = user.id ? user.id.toString() : "test_" + Date.now();
 
+let isRegistered = false;
+
+// При открытии запрашиваем статус
 window.onload = () => {
     tg.sendData(JSON.stringify({
         action: "get_profile",
         user_id: userId
     }));
+    
+    // Через 800мс показываем регистрацию (если бот не ответил)
+    setTimeout(() => {
+        if (!isRegistered) showRegister();
+    }, 800);
 };
+
+function showRegister() {
+    document.getElementById("content").innerHTML = `
+        <h2>Регистрация в турнире</h2>
+        <p>Аватарка будет взята из Telegram</p>
+        <input id="nickname" placeholder="Ваш никнейм" maxlength="20"><br><br>
+        <button onclick="registerUser()">Зарегистрироваться</button>
+    `;
+}
 
 async function registerUser() {
     const nickname = document.getElementById("nickname").value.trim();
@@ -87,6 +104,7 @@ async function registerUser() {
 }
 
 function showProfile(nickname, avatarUrl) {
+    isRegistered = true;
     document.getElementById("content").innerHTML = `
         <div class="profile">
             <h2>Профиль</h2>
@@ -96,17 +114,6 @@ function showProfile(nickname, avatarUrl) {
         </div>
     `;
 }
-
-function showRegister() {
-    document.getElementById("content").innerHTML = `
-        <h2>Регистрация в турнире</h2>
-        <p>Аватарка будет взята из Telegram</p>
-        <input id="nickname" placeholder="Ваш никнейм" maxlength="20"><br><br>
-        <button onclick="registerUser()">Зарегистрироваться</button>
-    `;
-}
-
-showRegister();
 </script>
 
 </body>
