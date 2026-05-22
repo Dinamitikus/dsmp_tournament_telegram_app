@@ -2,56 +2,43 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Регистрация</title>
-    <style>
-        body { font-family: sans-serif; padding: 20px; }
-        input, button { display: block; margin: 15px 0; width: 100%; padding: 10px; }
-    </style>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
 
 <h2>Регистрация</h2>
 
-<label>Никнейм</label>
-<input id="nickname" placeholder="Введите ник">
+<input id="nickname" placeholder="Никнейм"><br><br>
+<input type="file" id="avatar"><br><br>
 
-<label>Аватарка</label>
-<input type="file" id="avatar" accept="image/*">
-
-<button id="registerBtn">Зарегистрироваться</button>
+<button onclick="send()">Зарегистрироваться</button>
 
 <script>
-document.getElementById("registerBtn").onclick = async () => {
-    const nickname = document.getElementById("nickname").value.trim();
-    const fileInput = document.getElementById("avatar").files[0];
+function send() {
+    const name = document.getElementById("nickname").value;
+    const file = document.getElementById("avatar").files[0];
 
-    if (!nickname) {
-        alert("Введите никнейм!");
+    if (!name) {
+        alert("Введите ник!");
         return;
     }
 
-    let avatarBase64 = null;
-
-    if (fileInput) {
+    if (file) {
         const reader = new FileReader();
-        reader.onload = () => {
-            avatarBase64 = reader.result;
-
+        reader.onload = function () {
             Telegram.WebApp.sendData(JSON.stringify({
-                action: "register",
-                nickname: nickname,
-                avatar: avatarBase64
+                nickname: name,
+                avatar: reader.result
             }));
         };
-        reader.readAsDataURL(fileInput);
+        reader.readAsDataURL(file);
     } else {
         Telegram.WebApp.sendData(JSON.stringify({
-            action: "register",
-            nickname: nickname,
+            nickname: name,
             avatar: null
         }));
     }
-};
+}
 </script>
 
 </body>
