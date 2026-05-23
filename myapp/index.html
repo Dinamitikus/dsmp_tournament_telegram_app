@@ -6,41 +6,11 @@
     <title>DSMP Tournament</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            padding: 20px;
-            background: #17212b;
-            color: white;
-            margin: 0;
-        }
-        input {
-            padding: 12px;
-            width: 80%;
-            font-size: 17px;
-            margin: 15px 0;
-            border-radius: 8px;
-            border: none;
-        }
-        button {
-            padding: 14px 32px;
-            font-size: 17px;
-            margin: 10px;
-            border-radius: 8px;
-            background: #00aaff;
-            color: white;
-            border: none;
-        }
-        .profile {
-            margin-top: 30px;
-        }
-        img {
-            width: 130px;
-            height: 130px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 3px solid #00aaff;
-        }
+        body { font-family: Arial, sans-serif; text-align: center; padding: 20px; background: #17212b; color: white; }
+        input { padding: 12px; width: 80%; font-size: 17px; margin: 15px 0; border-radius: 8px; }
+        button { padding: 14px 32px; font-size: 17px; background: #00aaff; color: white; border: none; border-radius: 8px; }
+        .profile { margin-top: 30px; }
+        img { width: 130px; height: 130px; border-radius: 50%; border: 3px solid #00aaff; object-fit: cover; }
     </style>
 </head>
 <body>
@@ -59,28 +29,38 @@ tg.expand();
 const user = tg.initDataUnsafe?.user || {};
 const userId = user.id ? user.id.toString() : "test_" + Date.now();
 
+// ←←←←←←←←← ИЗМЕНИ НА СВОЙ URL ←←←←←←←←←
+const BACKEND_URL = "https://dinamitikus.pythonanywhere.com/register";  
+
 async function registerUser() {
     const nickname = document.getElementById("nickname").value.trim();
+    if (!nickname) return alert("Введите никнейм!");
 
-    if (!nickname) {
-        return alert("Введите никнейм!");
+    const payload = {
+        action: "register",
+        user_id: userId,
+        nickname: nickname,
+        avatar: user.photo_url || null
+    };
+
+    try {
+        const response = await fetch(BACKEND_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (response.ok) {
+            showProfile(nickname, user.photo_url);
+        } else {
+            alert("Ошибка сервера");
+        }
+    } catch (e) {
+        alert("Не удалось подключиться к серверу. Проверь URL.");
+        console.error(e);
     }
-
-    // === СНАЧАЛА показываем профиль ===
-    showProfile(nickname, user.photo_url);
-
-    // === Потом отправляем данные боту (с небольшой задержкой) ===
-    setTimeout(() => {
-        tg.sendData(JSON.stringify({
-            action: "register",
-            user_id: userId,
-            nickname: nickname,
-            avatar: user.photo_url || null
-        }));
-    }, 300); // 300ms задержка часто помогает избежать авто-закрытия
 }
 
-// Показываем профиль
 function showProfile(nickname, avatarUrl) {
     document.getElementById("content").innerHTML = `
         <div class="profile">
@@ -93,6 +73,5 @@ function showProfile(nickname, avatarUrl) {
     `;
 }
 </script>
-
 </body>
 </html>
