@@ -6,86 +6,119 @@
     <title>DSMP Tournament</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
-        input { padding: 10px; width: 80%; margin: 10px 0; font-size: 16px; }
-        button { padding: 12px 24px; font-size: 16px; margin: 10px; }
-        .profile { margin-top: 20px; }
-        img { border-radius: 50%; width: 120px; height: 120px; object-fit: cover; }
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+            background: #17212b;
+            color: white;
+        }
+        input {
+            padding: 12px;
+            width: 80%;
+            font-size: 18px;
+            margin: 15px 0;
+            border-radius: 8px;
+            border: none;
+        }
+        button {
+            padding: 12px 30px;
+            font-size: 16px;
+            margin: 10px;
+            border-radius: 8px;
+            background: #00aaff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .profile {
+            margin-top: 30px;
+        }
+        img {
+            width: 130px;
+            height: 130px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #00aaff;
+        }
     </style>
 </head>
 <body>
 
-<div id="registration" style="display: none;">
+<!-- Форма регистрации -->
+<div id="registerScreen">
     <h2>Регистрация</h2>
-    <input id="nickname" placeholder="Ваш никнейм" maxlength="20"><br><br>
-    <button onclick="register()">Зарегистрироваться</button>
+    <input id="nickname" placeholder="Введите никнейм" maxlength="20"><br><br>
+    <button onclick="registerUser()">Зарегистрироваться</button>
 </div>
 
-<div id="profile" style="display: none;" class="profile">
-    <h2>Профиль</h2>
-    <img id="avatar" src="" alt="Аватар">
-    <h3 id="nick"></h3>
-    <p>ID: <span id="user_id"></span></p>
-    <button onclick="tg.close()">Закрыть</button>
+<!-- Профиль -->
+<div id="profileScreen" style="display: none;" class="profile">
+    <h2>Твой профиль</h2>
+    <img id="avatar" src="" alt="Аватар"><br><br>
+    <h3 id="nicknameText"></h3>
+    <p>ID: <span id="userIdText"></span></p>
+    <button onclick="tg.close()">Закрыть приложение</button>
 </div>
 
 <script>
 const tg = window.Telegram.WebApp;
 tg.expand();
 
-const user = tg.initDataUnsafe.user;
-const userId = user.id.toString();
+const user = tg.initDataUnsafe?.user;
+const userId = user?.id?.toString();
 
-async function loadUser() {
-    // Отправляем запрос на проверку/регистрацию
+if (!userId) {
+    document.body.innerHTML = "<h2>Ошибка: запустите через Telegram</h2>";
+}
+
+// Показываем профиль, если уже зарегистрирован
+async function checkProfile() {
     tg.sendData(JSON.stringify({
-        action: "get_or_register",
-        user_id: userId,
-        first_name: user.first_name,
-        username: user.username,
-        photo_url: user.photo_url || null
+        action: "get_profile",
+        user_id: userId
     }));
 }
 
-async function register() {
+// Регистрация
+async function registerUser() {
     const nickname = document.getElementById("nickname").value.trim();
-    
+
     if (!nickname) {
-        return alert("Введите никнейм!");
+        alert("Введите никнейм!");
+        return;
     }
 
     tg.sendData(JSON.stringify({
         action: "register",
         user_id: userId,
         nickname: nickname,
-        photo_url: user.photo_url || null
+        avatar: user.photo_url || null
     }));
+
+    // Показываем профиль сразу (локально)
+    showProfile(nickname, user.photo_url);
 }
 
-// Получаем ответ от бота
-tg.onEvent('viewportChanged', () => {});
-window.addEventListener('message', (event) => {
-    // Telegram иногда использует postMessage
-});
+// Показ профиля
+function showProfile(nickname, avatarUrl) {
+    document.getElementById("registerScreen").style.display = "none";
+    document.getElementById("profileScreen").style.display = "block";
 
-async function showProfile(data) {
-    document.getElementById("registration").style.display = "none";
-    document.getElementById("profile").style.display = "block";
-
-    document.getElementById("nick").textContent = data.nickname;
-    document.getElementById("user_id").textContent = userId;
+    document.getElementById("nicknameText").textContent = nickname;
+    document.getElementById("userIdText").textContent = userId;
     
     const avatarImg = document.getElementById("avatar");
-    avatarImg.src = data.avatar || "https://via.placeholder.com/120";
+    avatarImg.src = avatarUrl || "https://via.placeholder.com/130?text=Avatar";
 }
 
 // При загрузке
 window.onload = () => {
-    loadUser();
+    checkProfile();
 };
 
-// Слушаем данные от бота
-tg.onEvent('web_app_data_sent', () => {}); // не используется
+// Слушаем ответ от бота (на случай, если бот пришлёт подтверждение)
+tg.onEvent('web_app_data_sent', () => {});
 </script>
 
 </body>
