@@ -57,7 +57,7 @@ const tg = window.Telegram.WebApp;
 tg.expand();
 
 const user = tg.initDataUnsafe?.user || {};
-const userId = user.id ? user.id.toString() : "test_user_" + Date.now(); // для теста
+const userId = user.id ? user.id.toString() : "test_" + Date.now();
 
 async function registerUser() {
     const nickname = document.getElementById("nickname").value.trim();
@@ -65,19 +65,27 @@ async function registerUser() {
     if (!nickname) {
         return alert("Введите никнейм!");
     }
-    /*
-    tg.sendData(JSON.stringify({
-        action: "register",
-        user_id: userId,
-        nickname: nickname,
-        avatar: user.photo_url || null
-    }));*/
 
-    // Сразу показываем профиль
+    // === СНАЧАЛА показываем профиль ===
+    showProfile(nickname, user.photo_url);
+
+    // === Потом отправляем данные боту (с небольшой задержкой) ===
+    setTimeout(() => {
+        tg.sendData(JSON.stringify({
+            action: "register",
+            user_id: userId,
+            nickname: nickname,
+            avatar: user.photo_url || null
+        }));
+    }, 300); // 300ms задержка часто помогает избежать авто-закрытия
+}
+
+// Показываем профиль
+function showProfile(nickname, avatarUrl) {
     document.getElementById("content").innerHTML = `
         <div class="profile">
             <h2>Профиль создан!</h2>
-            <img src="${user.photo_url || 'https://i1.sndcdn.com/artworks-oGvaMt0dsBWPL7WZ-qgbAMA-t500x500.jpg'}" alt="Аватар"><br><br>
+            <img src="${avatarUrl || 'https://via.placeholder.com/130?text=Avatar'}" alt="Аватар"><br><br>
             <h3>${nickname}</h3>
             <p>ID: ${userId}</p>
             <button onclick="tg.close()">Закрыть приложение</button>
