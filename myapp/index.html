@@ -30,7 +30,7 @@ const user = tg.initDataUnsafe?.user || {};
 const userId = user.id ? user.id.toString() : "test_" + Date.now();
 
 // ←←←←←←←←← ИЗМЕНИ НА СВОЙ URL ←←←←←←←←←
-const BACKEND_URL = "https://dinamitikus.pythonanywhere.com/register";  
+const BACKEND_URL = "https://dinamitikus.pythonanywhere.com";  
 
 async function registerUser() {
     const nickname = document.getElementById("nickname").value.trim();
