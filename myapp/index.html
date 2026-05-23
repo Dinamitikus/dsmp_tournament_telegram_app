@@ -68,10 +68,6 @@ tg.expand();
 const user = tg.initDataUnsafe?.user;
 const userId = user?.id?.toString();
 
-if (!userId) {
-    document.body.innerHTML = "<h2>Ошибка: запустите через Telegram</h2>";
-}
-
 // Показываем профиль, если уже зарегистрирован
 async function checkProfile() {
     tg.sendData(JSON.stringify({
