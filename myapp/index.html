@@ -65,13 +65,13 @@ async function registerUser() {
     if (!nickname) {
         return alert("Введите никнейм!");
     }
-
+    /*
     tg.sendData(JSON.stringify({
         action: "register",
         user_id: userId,
         nickname: nickname,
         avatar: user.photo_url || null
-    }));
+    }));*/
 
     // Сразу показываем профиль
     document.getElementById("content").innerHTML = `
