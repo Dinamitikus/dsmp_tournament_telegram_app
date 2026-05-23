@@ -1,120 +1,48 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DSMP Tournament</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            padding: 20px;
-            background: #17212b;
-            color: white;
-        }
-        input {
-            padding: 12px;
-            width: 80%;
-            font-size: 18px;
-            margin: 15px 0;
-            border-radius: 8px;
-            border: none;
-        }
-        button {
-            padding: 12px 30px;
-            font-size: 16px;
-            margin: 10px;
-            border-radius: 8px;
-            background: #00aaff;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-        .profile {
-            margin-top: 30px;
-        }
-        img {
-            width: 130px;
-            height: 130px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 3px solid #00aaff;
-        }
-    </style>
 </head>
 <body>
 
-<!-- Форма регистрации -->
-<div id="registerScreen">
-    <h2>Регистрация</h2>
-    <input id="nickname" placeholder="Введите никнейм" maxlength="20"><br><br>
-    <button onclick="registerUser()">Зарегистрироваться</button>
-</div>
+<h2>Регистрация</h2>
 
-<!-- Профиль -->
-<div id="profileScreen" style="display: none;" class="profile">
-    <h2>Твой профиль</h2>
-    <img id="avatar" src="" alt="Аватар"><br><br>
-    <h3 id="nicknameText"></h3>
-    <p>ID: <span id="userIdText"></span></p>
-    <button onclick="tg.close()">Закрыть приложение</button>
-</div>
+<input id="nickname" placeholder="Никнейм"><br><br>
+<input type="file" id="avatar"><br><br>
+
+<button onclick="send()">Зарегистрироваться</button>
 
 <script>
 const tg = window.Telegram.WebApp;
 tg.expand();
 
-const user = tg.initDataUnsafe?.user;
-const userId = user?.id?.toString();
-
-// Показываем профиль, если уже зарегистрирован
-async function checkProfile() {
-    tg.sendData(JSON.stringify({
-        action: "get_profile",
-        user_id: userId
-    }));
-}
-
-// Регистрация
-async function registerUser() {
+async function send() {
     const nickname = document.getElementById("nickname").value.trim();
+    const file = document.getElementById("avatar").files[0];
 
     if (!nickname) {
-        alert("Введите никнейм!");
-        return;
+        return alert("Введите никнейм!");
     }
 
     tg.sendData(JSON.stringify({
         action: "register",
-        user_id: userId,
         nickname: nickname,
-        avatar: user.photo_url || null
+        avatar: file ? await toBase64(file) : null
     }));
 
-    // Показываем профиль сразу (локально)
-    showProfile(nickname, user.photo_url);
+    // Можно закрыть WebApp после отправки
+    // tg.close();
 }
 
-// Показ профиля
-function showProfile(nickname, avatarUrl) {
-    document.getElementById("registerScreen").style.display = "none";
-    document.getElementById("profileScreen").style.display = "block";
-
-    document.getElementById("nicknameText").textContent = nickname;
-    document.getElementById("userIdText").textContent = userId;
-    
-    const avatarImg = document.getElementById("avatar");
-    avatarImg.src = avatarUrl || "https://via.placeholder.com/130?text=Avatar";
+function toBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
 }
-
-// При загрузке
-window.onload = () => {
-    checkProfile();
-};
-
-// Слушаем ответ от бота (на случай, если бот пришлёт подтверждение)
-tg.onEvent('web_app_data_sent', () => {});
 </script>
 
 </body>
